@@ -33,7 +33,11 @@ def test_offline_backup_restores_data_but_revokes_old_sessions(system):
     result = create_backup(settings, output)
     assert output.exists() and result["encrypted"] is False
     with zipfile.ZipFile(output) as archive:
-        assert not any(name.endswith(".env") or "/exports/" in name or name.endswith(".lock") for name in archive.namelist())
+        names = archive.namelist()
+        sections = {name.split("/")[2] for name in names if name.startswith("workspaces/") and name.count("/") >= 3}
+        assert sections <= {"files", "captures", "versions", "journals", "trash"}, sections
+        assert {"files", "captures"} <= sections, sections
+        assert not any(name.endswith(".env") or name.endswith(".lock") or "/exports/" in name for name in names)
     target = settings.data_root.parent / (settings.data_root.name + "-restored")
     restored = restore_backup(output, target)
     assert restored["files"] == result["files"]

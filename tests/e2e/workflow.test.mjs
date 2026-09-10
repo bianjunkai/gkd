@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { spawn } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { resolve } from 'node:path';
@@ -62,7 +61,7 @@ async function api(page, path) {
   return response.json();
 }
 
-test('desktop: capture, edit preview, confirm, task completion, undo, export and account isolation', { timeout: 120000 }, async () => {
+test('desktop: capture, edit preview, confirm, task completion, undo, search and account isolation', { timeout: 120000 }, async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
   const page = await context.newPage();
   const errors = []; page.on('pageerror', error => errors.push(error.message));
@@ -110,18 +109,6 @@ test('desktop: capture, edit preview, confirm, task completion, undo, export and
   await page.locator('.search-hit').first().waitFor();
   assert.ok(await page.locator('.search-hit').count() >= 3);
   await page.getByRole('navigation').getByRole('button', { name: '我的', exact: true }).click();
-  const downloadEvent = page.waitForEvent('download');
-  await page.getByRole('button', { name: '导出我的内容', exact: true }).click();
-  const download = await downloadEvent; const downloadPath = resolve(runRoot, 'browser-export.zip');
-  assert.equal(await download.failure(), null, 'The browser must finish the download without an error');
-  assert.equal(download.suggestedFilename(), 'guike-export.zip');
-  await download.saveAs(downloadPath);
-  const downloaded = await readFile(downloadPath);
-  assert.ok(downloaded.length > 100, `Downloaded export is incomplete: ${downloaded.length} bytes`);
-  assert.equal(downloaded.subarray(0, 4).toString('hex'), '504b0304', 'Export must be a ZIP archive');
-  const exportJob = (await api(page, '/jobs')).find(job => job.kind === 'export' && job.status === 'succeeded');
-  assert.ok(exportJob?.result?.sha256, 'The export job must publish a checksum');
-  assert.equal(createHash('sha256').update(downloaded).digest('hex'), exportJob.result.sha256, 'Downloaded bytes must match the server manifest');
   await page.getByRole('navigation').getByRole('button', { name: '收集箱', exact: true }).click();
   await page.getByLabel('记录内容').fill('账号一的待上传草稿，不应出现在账号二。');
   await page.reload(); await page.getByLabel('记录内容').waitFor();

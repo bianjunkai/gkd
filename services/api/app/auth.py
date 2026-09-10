@@ -80,7 +80,7 @@ class AuthService:
         session.add(workspace)
         session.flush()
         root = self.store.workspace_root(workspace.id)
-        for name in ("files", "captures", "versions", "journals", "exports", "trash"):
+        for name in ("files", "captures", "versions", "journals", "trash"):
             (root / name).mkdir(exist_ok=True)
         for name in ("工作", "个人"):
             folder = Folder(

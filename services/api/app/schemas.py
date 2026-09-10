@@ -158,7 +158,3 @@ class RestoreInput(VersionInput):
 
 class CaptureState(StrictModel):
     action: Literal["archive", "unarchive", "trash", "restore"]
-
-
-class ExportInput(StrictModel):
-    include_history: bool = False

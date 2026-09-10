@@ -1,7 +1,4 @@
-import io
-import json
 import time
-import zipfile
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,7 +6,7 @@ from sqlalchemy import delete, select
 
 from app.config import Settings
 from app.db import CaptureRecord, ChangeSet, GroupRecord, Job, Proposal, TaskIndex
-from app.domain import digest, new_id
+from app.domain import new_id
 from app.main import create_app
 
 
@@ -198,24 +195,6 @@ def test_job_restart_after_proposal_commit_does_not_duplicate(api):
         assert len(list(session.scalars(select(Proposal)))) == 1
 
 
-def test_exports_have_verified_manifest_and_require_auth(api):
-    client, app, _ = api
-    group(client, tasks=[{"title": "整理验收报告"}])
-    save(client, "导出原文验证")
-    queued = write(client, "POST", "/api/exports", {"include_history": True}).json()
-    assert app.state.jobs.run_once()
-    job = client.get("/api/jobs/" + queued["id"]).json()
-    assert job["status"] == "succeeded", job
-    response = client.get(job["result"]["download_url"])
-    assert digest(response.content) == job["result"]["sha256"]
-    with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
-        manifest = json.loads(archive.read("manifest.json"))
-        for entry in manifest["entries"]:
-            assert digest(archive.read(entry["path"])) == entry["sha256"]
-        assert not any("sqlite" in path or "session" in path for path in archive.namelist())
-    assert client.get(job["result"]["download_url"], headers={"Authorization": ""}).status_code == 401
-
-
 def test_rebuild_restores_indices_without_modifying_files(api):
     client, app, _ = api
     original = group(client, tasks=[{"title": "提交报告", "tags": ["发布"]}])
@@ -261,7 +240,7 @@ def test_tenant_boundary_covers_content_jobs_history_and_writes(api):
     client.headers["Authorization"] = "Bearer " + other["token"]
     paths = ["/api/captures/" + capture["id"], "/api/proposals/" + proposal["id"], "/api/groups/" + g["id"],
              "/api/jobs/" + job["id"], "/api/changes/" + change["id"],
-             f"/api/groups/{g['id']}/versions/{g['content_hash']}", f"/api/exports/{job['id']}/download"]
+             f"/api/groups/{g['id']}/versions/{g['content_hash']}"]
     for path in paths:
         assert client.get(path).status_code == 404, path
     assert client.get("/api/search?q=合同").json()["total"] == 0

@@ -380,7 +380,7 @@ class ContentStore:
 
     def check_capacity(self, workspace_id: str, additional_bytes: int):
         if self.usage(workspace_id) + additional_bytes > self.max_workspace_bytes:
-            raise AppError("CAPACITY_EXCEEDED", "工作空间容量不足。原有内容仍可查看和导出。", 507)
+            raise AppError("CAPACITY_EXCEEDED", "工作空间容量不足。原有内容仍可直接查看。", 507)
 
     @staticmethod
     def _within(path: Path, root: Path):
@@ -393,7 +393,7 @@ class ContentStore:
             current = current.parent
 
     def path(self, workspace_id: str, section: str, relative: str) -> Path:
-        if section not in {"files", "captures", "versions", "journals", "exports", "trash"}:
+        if section not in {"files", "captures", "versions", "journals", "trash"}:
             raise ValueError("Unknown storage section")
         root = self.workspace_root(workspace_id)
         result = root / section / checked_relative(relative)

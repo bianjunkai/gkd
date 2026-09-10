@@ -58,10 +58,10 @@ export interface Change {
   differences?: Array<{ group_id: string; diff: string }>;
 }
 export interface Job {
-  id: string; kind: 'analysis' | 'export' | 'reindex'; status: 'pending' | 'running' | 'succeeded' | 'failed';
+  id: string; kind: 'analysis' | 'reindex'; status: 'pending' | 'running' | 'succeeded' | 'failed';
   attempts: number; created_at: number; finished_at: number | null; run_after: number;
   error: { code: string; message: string; retryable: boolean } | null;
-  result: { proposal_id?: string; download_url?: string; sha256?: string; expires_at?: number;
+  result: { proposal_id?: string;
     groups?: number; tasks?: number; errors?: Array<{ path: string; code: string; message: string }> } | null;
 }
 export interface SearchHit { type: 'task' | 'group' | 'capture'; id: string; title: string; snippet: string; group_id: string | null }
@@ -177,6 +177,5 @@ export class ApiClient {
   undo = (id: string) => this.mutation<Change>('POST', `/changes/${encodeURIComponent(id)}/undo`);
   version = (groupId: string, hash: string) => this.request<VersionPreview>('GET', `/groups/${encodeURIComponent(groupId)}/versions/${encodeURIComponent(hash)}`);
   restoreVersion = (groupId: string, preview: VersionPreview) => this.mutation<Change>('POST', `/groups/${encodeURIComponent(groupId)}/restore-version`, { expected_revision: preview.expected_revision, expected_hash: preview.expected_hash, content_hash: preview.content_hash });
-  export = (include_history = false) => this.mutation<Job>('POST', '/exports', { include_history });
   rebuildIndex = () => this.mutation<Job>('POST', '/index/rebuild');
 }

@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from fastapi import Depends, FastAPI, Header, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -28,7 +28,7 @@ from .jobs import JobService
 from .locking import workspace_lock
 from .maintenance import MaintenanceService
 from .proposals import ProposalService
-from .schemas import (AnalysisInput, CaptureInput, CaptureState, ExportInput, FolderCreate, FolderUpdate,
+from .schemas import (AnalysisInput, CaptureInput, CaptureState, FolderCreate, FolderUpdate,
                       GroupCreate, GroupUpdate, LoginInput, MarkdownEdit, ProposalConfirm, ProposalEdit, ProposalReject,
                       RegisterInput, RestoreInput, TaskCreate, TaskUpdate, VersionInput, WechatInput, WorkspaceInput)
 from .storage import ContentStore
@@ -49,7 +49,7 @@ def create_app(settings: Settings | None = None):
     proposals = ProposalService(db, store, changes, workspace, captures, extraction)
     jobs = JobService(db, store, settings, changes)
     maintenance = MaintenanceService(db, store, changes, captures, workspace)
-    jobs.handlers = {"analysis": proposals.analyze_job, "export": maintenance.export_job, "reindex": maintenance.reindex_job}
+    jobs.handlers = {"analysis": proposals.analyze_job, "reindex": maintenance.reindex_job}
 
     @asynccontextmanager
     async def lifespan(app):
@@ -58,7 +58,6 @@ def create_app(settings: Settings | None = None):
             db.initialize()
             app.state.recovery_errors = changes.recover_all()
             app.state.capture_errors = captures.recover()
-            maintenance.clean_expired_exports()
             if settings.run_worker:
                 jobs.start()
             try:
@@ -358,14 +357,6 @@ def create_app(settings: Settings | None = None):
     @app.post("/api/groups/{group_id}/restore-version")
     def restore_version(group_id: str, data: RestoreInput, ws=Depends(ws_id), request_key=Depends(key)):
         return workspace.restore_version(ws, group_id, data, request_key, fingerprint("version:restore:" + group_id, data))
-
-    @app.post("/api/exports", status_code=202)
-    def export(data: ExportInput, ws=Depends(ws_id), request_key=Depends(key)):
-        return jobs.submit(ws, "export", data.model_dump(), request_key, fingerprint("export", data))
-
-    @app.get("/api/exports/{job_id}/download")
-    def download(job_id: str, ws=Depends(ws_id)):
-        return FileResponse(maintenance.export_path(ws, job_id), media_type="application/zip", filename="guike-export.zip")
 
     @app.post("/api/index/rebuild", status_code=202)
     def rebuild(ws=Depends(ws_id), request_key=Depends(key)):

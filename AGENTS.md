@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-归刻（GKD）is a Markdown-driven personal GTD workspace. Version 0.1.0 is a working **local MVP**: capture, clarify, confirm, write to Markdown, complete, undo, search and export all function end to end. It is not a completed V1 or a production release.
+归刻（GKD）is a Markdown-driven personal GTD workspace. Version 0.1.0 is a working **local MVP**: capture, clarify, confirm, write to Markdown, complete, undo and search all function end to end. It is not a completed V1 or a production release.
 
 Authoritative documents, in reading order:
 
@@ -29,7 +29,7 @@ docs/                     验收记录、实现决策、原始需求归档
 
 The WeChat Mini Program is the **primary client**; the React Web workspace exists for local development, integration and browser regression. Do not treat Web as a replacement for the Mini Program.
 
-Runtime data (`apps/*/dist/`, `.data/`, `.cache/`, `node_modules/`, `.venv/`) is generated and git-ignored. Never commit `.data/`, `.env`, exports, or backups — they contain raw user text and credentials.
+Runtime data (`apps/*/dist/`, `.data/`, `.cache/`, `node_modules/`, `.venv/`) is generated and git-ignored. Never commit `.data/`, `.env`, or backups — they contain raw user text and credentials.
 
 ## Build, Test, and Development Commands
 
