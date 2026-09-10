@@ -1,0 +1,14 @@
+{
+  "name": "@gkd/miniprogram",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@gkd/client": "*" },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

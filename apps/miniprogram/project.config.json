@@ -1,0 +1,14 @@
+{
+  "appid": "touristappid",
+  "projectname": "guike-mvp",
+  "description": "归刻 · Markdown GTD 工作空间",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "dist/",
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "urlCheck": true,
+    "enhance": true
+  },
+  "condition": {}
+}

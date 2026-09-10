@@ -1,0 +1,12 @@
+<view class="page"><view class="kicker">CAPTURE / 原始记录</view><view class="title">原文一直在这里。</view><view class="subtitle">整理与重试都不会改写原文。</view>
+  <view wx:if="{{error}}" class="error">{{error}}<button bindtap="reload" disabled="{{busy}}">重新读取</button></view>
+  <view wx:if="{{capture}}"><view class="row"><text class="badge {{capture.status}}">{{statusLabel}}</text><text class="small">{{timeLabel}}</text></view><text class="raw" selectable>{{capture.raw_text}}</text>
+    <view class="field"><text class="label">整理方式</text><picker class="picker" range="{{modes}}" value="{{modeIndex}}" bindchange="mode">{{modes[modeIndex]}}</picker></view>
+    <view class="field"><text class="label">参照时间（可选）</text><input class="input" value="{{reference}}" bindinput="reference" placeholder="2026-09-07T10:00:00+08:00"/><view class="hint">留空使用原文保存时间；历史聊天可填含时区的 ISO 时间。</view></view>
+    <view wx:if="{{capture.jobs[0].error}}" class="notice">上次处理：{{capture.jobs[0].error.message}}</view><view wx:if="{{jobLabel}}" class="notice">后台状态：{{jobLabel}}</view>
+    <button wx:if="{{capture.status !== 'processing'}}" class="primary" bindtap="analyze" loading="{{busy}}" disabled="{{busy || capture.status === 'archived'}}">{{capture.status === 'processed' || capture.status === 'needs_confirmation' ? '重新分析' : '整理这条记录'}}</button>
+    <button wx:else class="primary" bindtap="checkJob" disabled="{{busy}}">查看后台结果</button>
+    <view class="buttons"><button bindtap="archive" disabled="{{busy || capture.status === 'processing'}}">{{capture.status === 'archived' ? '恢复归档' : '归档记录'}}</button><button class="danger" bindtap="trash" disabled="{{busy || capture.status === 'processing'}}">移入回收站</button></view>
+    <view wx:if="{{proposals.length}}" class="section"><text class="section-title">整理记录</text><view wx:for="{{proposals}}" wx:key="id" class="list-row row" bindtap="openProposal" data-id="{{item.id}}"><text>提案修订 {{item.revision}}</text><text class="badge {{item.status}}">{{item.label}}</text></view></view>
+  </view>
+</view>

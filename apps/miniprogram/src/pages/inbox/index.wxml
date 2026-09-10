@@ -1,0 +1,17 @@
+<view class="page">
+  <view class="kicker">INBOX / 收集箱</view><view class="title">先记下来，再慢慢理清。</view><view class="subtitle">待办、灵感、一段沟通。这里接住还没整理的想法。</view>
+  <view class="card"><view class="row"><text class="small">一条新记录</text><picker range="{{sources}}" value="{{sourceIndex}}" bindchange="source" disabled="{{busy || uncertain}}"><text class="small">{{sources[sourceIndex]}} ﹀</text></picker></view>
+    <textarea class="textarea capture-input" placeholder="比如，明天下午给李总发合同…" value="{{draft.raw_text}}" bindinput="input" maxlength="10000" disabled="{{busy || uncertain}}" auto-height="{{false}}"/>
+    <view class="row"><text class="small">{{storageError ? '本机草稿保存失败，请勿退出' : draft.raw_text ? '仅本机草稿 · 未确认上传' : '原文会被完整保留'}}</text><text class="small">{{count}} / 10,000</text></view>
+    <view class="buttons"><button bindtap="save" data-organize="no" disabled="{{busy || !count}}">只保存</button><button class="primary" bindtap="save" data-organize="yes" loading="{{busy}}" disabled="{{busy || !count}}">保存并整理</button></view>
+    <picker range="{{modes}}" value="{{modeIndex}}" bindchange="mode" disabled="{{busy}}"><view class="hint">{{modes[modeIndex]}} · 点击切换</view></picker>
+  </view>
+  <view wx:if="{{uncertain &amp;&amp; !busy}}" class="notice">上次提交结果尚未确认。请重试原提交，避免产生重复记录。</view>
+  <view wx:if="{{jobStatus}}" class="notice">整理状态：{{jobStatus}}。离开页面不会删除已保存的原文，回来后可在原文页查看结果。</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view class="section row"><text class="section-title">所有记录 · {{total}}</text><picker range="{{filters}}" value="{{filterIndex}}" bindchange="filter"><text class="small">{{filters[filterIndex]}} ﹀</text></picker></view>
+  <view wx:if="{{!captures.length &amp;&amp; !busy &amp;&amp; !error}}" class="empty"><text class="empty-title">给脑海里的事，一个落点。</text>记下第一条内容，不必先选项目或日期。</view>
+  <view wx:for="{{captures}}" wx:key="id" class="list-row" bindtap="open" data-id="{{item.id}}"><text class="record-text">{{item.integrity_error ? '原文损坏或不可用，文件未被改写。' : item.raw_text}}</text><view class="meta"><text>{{item.source_type === 'wechat' ? '微信粘贴' : '文字记录'}}</text><text>{{item.time_label}}</text><text class="badge {{item.status}}">{{item.status_label}}</text></view><view wx:if="{{item.integrity_error}}" class="hint danger-text">{{item.integrity_error.message}}</view><button wx:if="{{item.integrity_error}}" catchtap="trashUnavailable" data-id="{{item.id}}" disabled="{{busy}}">移入回收站</button></view>
+  <view wx:if="{{total &gt; 20}}" class="buttons"><button bindtap="previous" disabled="{{busy || !offset}}">上一页</button><button bindtap="next" disabled="{{busy || offset + 20 &gt;= total}}">下一页</button></view>
+  <view class="footer">归刻 · 把想法变成行动</view>
+</view>

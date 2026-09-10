@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="brand">归刻 · GUIKE</view>
+  <view class="kicker">YOUR PRIVATE WORKSPACE</view>
+  <view class="login-title"><view>把想法留下，</view><view>让行动发生。</view></view>
+  <view class="subtitle"><view>随手记录，确认后再变成任务。</view><view>你的内容，以 Markdown 保存在你手中。</view></view>
+  <view wx:if="{{error}}" class="error">{{error}}<button bindtap="retry" disabled="{{busy}}">重试连接</button></view>
+  <button class="primary" bindtap="wechatLogin" loading="{{busy}}" disabled="{{busy || !health.wechat_configured}}">微信登录</button>
+  <view wx:if="{{!health.wechat_configured}}" class="hint">真实微信登录尚需配置 AppID 与服务端密钥。</view>
+  <view wx:if="{{health.password_auth}}" class="section card">
+    <view class="section-title">{{register ? '创建开发账号' : '本地开发登录'}}</view>
+    <view wx:if="{{register}}" class="field"><text class="label">如何称呼你</text><input class="input" value="{{display_name}}" data-field="display_name" bindinput="input" maxlength="60" placeholder="你的称呼"/></view>
+    <view class="field"><text class="label">账号</text><input class="input" value="{{username}}" data-field="username" bindinput="input" maxlength="80" placeholder="至少 3 个字符"/></view>
+    <view class="field"><text class="label">密码</text><input class="input" password value="{{password}}" data-field="password" bindinput="input" maxlength="128" placeholder="至少 8 位"/></view>
+    <button class="primary" bindtap="submit" loading="{{busy}}" disabled="{{busy}}">{{register ? '创建工作空间' : '进入工作空间'}}</button>
+    <button class="link" bindtap="toggleRegister">{{register ? '已有账号？去登录' : '第一次使用？创建账号'}}</button>
+  </view>
+  <view class="notice">默认使用本地规则解析。仅在你阅读说明、主动授权并选择外部 AI 时，才会发送所选原文。</view>
+  <view class="hint"><view>连接服务：{{apiBase}}</view><view>真机必须使用已配置的 HTTPS 服务域名。</view></view>
+</view>

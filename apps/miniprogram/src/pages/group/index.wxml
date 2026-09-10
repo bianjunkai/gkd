@@ -1,0 +1,21 @@
+<view class="page"><view class="kicker">MARKDOWN / 任务组</view><view class="title">{{isNew ? '为这件事，留一个位置。' : group.title || '正在读取…'}}</view><view wx:if="{{group}}" class="path">{{group.path}} · 修订 {{group.revision}}</view>
+  <view wx:if="{{error}}" class="error">{{error}}<button wx:if="{{!editing}}" bindtap="reload" disabled="{{busy}}">重新读取</button></view>
+  <view wx:if="{{editing}}" class="card section"><view class="field"><text class="label">任务组名称</text><input class="input" value="{{title}}" data-field="title" bindinput="input" maxlength="200"/></view>
+    <view class="field"><text class="label">文件夹</text><picker class="picker" range="{{folderLabels}}" value="{{folderIndex}}" bindchange="folder">{{folderLabels[folderIndex]}}</picker></view>
+    <view wx:if="{{!isNew}}" class="field"><text class="label">文件名</text><input class="input" value="{{fileName}}" data-field="fileName" bindinput="input" maxlength="100"/></view>
+    <view wx:if="{{!isNew}}" class="field"><text class="label">状态</text><picker class="picker" range="{{statuses}}" value="{{statusIndex}}" bindchange="status">{{statuses[statusIndex]}}</picker><view class="hint">组完成前，须先结束其中的任务。</view></view>
+    <view wx:if="{{isNew}}" class="field"><text class="label">第一项任务（可选）</text><input class="input" value="{{firstTask}}" data-field="firstTask" bindinput="input" maxlength="200" placeholder="一个具体的下一步"/></view>
+    <view class="field"><text class="label">标签（逗号分隔）</text><input class="input" value="{{tags}}" data-field="tags" bindinput="input"/></view>
+    <view class="field"><text class="label">正文</text><textarea class="textarea" value="{{body}}" data-field="body" bindinput="input" maxlength="100000" placeholder="目标、背景、工作记录…"/><view class="hint">只编辑非托管正文。任务清单由结构化数据自动生成。</view></view><view class="buttons"><button bindtap="cancelEdit" disabled="{{busy}}">取消</button><button class="primary" bindtap="save" loading="{{busy}}" disabled="{{busy}}">保存任务组</button></view>
+  </view>
+  <view wx:elif="{{group}}"><view class="row section"><text class="progress">{{group.progress.total ? group.progress.done + ' / ' + group.progress.total + ' 完成' : '无任务'}}</text><text class="badge">{{group.status === 'archived' ? '已归档' : group.status === 'done' ? '已完成' : '进行中'}}</text></view>
+    <view class="buttons"><button bindtap="edit" disabled="{{busy}}">编辑任务组</button><button bindtap="history">版本记录</button></view>
+    <view class="section row"><text class="section-title">行动清单</text><button class="link" bindtap="task" disabled="{{group.status === 'archived'}}">添加任务</button></view>
+    <view wx:for="{{tasks}}" wx:key="id" class="task-row"><button class="task-check" bindtap="complete" data-id="{{item.id}}" disabled="{{busy || group.status === 'archived' || item.status === 'archived'}}"><view>{{item.status === 'done' ? '✓' : ''}}</view></button><view class="grow" bindtap="task" data-id="{{item.id}}"><text class="task-title {{item.status === 'done' ? 'done' : ''}}">{{item.title}}</text><view wx:if="{{item.scheduled}}" class="task-meta">计划 {{item.scheduled_label}}</view><view wx:if="{{item.deadline}}" class="task-meta {{item.is_overdue ? 'danger-text' : ''}}">截止 {{item.deadline_label}}</view></view><text class="badge {{item.status}}">{{item.status_label}}</text></view>
+    <view wx:if="{{!tasks.length}}" class="notice">这是一个资料文件，可以随时添加任务。</view><button wx:if="{{canUndo}}" bindtap="undo" disabled="{{busy}}">撤销最近变更</button>
+    <view class="section"><text class="section-title">正文</text><text class="raw" selectable>{{group.body || '暂无补充正文。'}}</text></view>
+    <view wx:if="{{sources.length}}" class="section"><text class="section-title">原始来源</text><button wx:for="{{sources}}" wx:key="*this" class="link" bindtap="original" data-id="{{item}}">查看原始记录 {{index + 1}}</button></view>
+    <button bindtap="source">{{showSource ? '收起源码' : '只读 Markdown 源码'}}</button><scroll-view wx:if="{{showSource}}" class="diff" scroll-y><text selectable>{{group.markdown}}</text></scroll-view><view class="hint">不会执行 HTML，也不会自动加载远程图片。</view>
+    <view class="divider"/><button class="danger" bindtap="trash" disabled="{{busy}}">移入回收站</button>
+  </view>
+</view>

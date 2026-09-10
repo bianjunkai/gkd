@@ -1,0 +1,28 @@
+{
+  "name": "gkd-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12" },
+  "workspaces": ["apps/web", "apps/miniprogram", "packages/client"],
+  "scripts": {
+    "start": "node scripts/api.mjs start",
+    "api": "node scripts/api.mjs serve",
+    "api:dev": "node scripts/api.mjs dev",
+    "dev": "npm run dev --workspace @gkd/web",
+    "build": "npm run build --workspace @gkd/web && npm run build --workspace @gkd/miniprogram",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:api": "node scripts/api.mjs test",
+    "test:e2e": "node --test tests/e2e/*.test.mjs",
+    "check": "npm run typecheck && npm test && npm run build",
+    "verify": "npm run check && npm run test:api && npm run test:e2e",
+    "backup": "node scripts/api.mjs backup"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2",
+    "@types/node": "24.12.4",
+    "typescript": "5.9.3",
+    "vitest": "2.1.9"
+  }
+}

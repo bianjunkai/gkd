@@ -1,0 +1,25 @@
+{
+  "pages": [
+    "pages/inbox/index", "pages/today/index", "pages/workspace/index", "pages/search/index", "pages/settings/index",
+    "pages/login/index", "pages/capture/index", "pages/proposal/index", "pages/group/index", "pages/task/index", "pages/history/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "归刻",
+    "navigationBarBackgroundColor": "#f7f6f3",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fbfbfa",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "color": "#797e73", "selectedColor": "#344b30", "backgroundColor": "#f7f6f3", "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/inbox/index", "text": "收集箱" },
+      { "pagePath": "pages/today/index", "text": "今日" },
+      { "pagePath": "pages/workspace/index", "text": "工作空间" },
+      { "pagePath": "pages/search/index", "text": "搜索" },
+      { "pagePath": "pages/settings/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

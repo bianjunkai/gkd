@@ -1,0 +1,6 @@
+<view class="page"><view class="kicker">SEARCH / 搜索</view><view class="title">找到你留下的线索。</view><view class="subtitle">中文关键词搜索任务、文件与原文。</view><view class="row"><input class="input grow" value="{{text}}" bindinput="input" bindconfirm="search" confirm-type="search" maxlength="200" placeholder="输入一个关键词"/><button class="primary" bindtap="search" disabled="{{busy || !text}}">搜索</button></view>
+  <view class="tabs"><button wx:for="{{kinds}}" wx:key="*this" class="{{index === kindIndex ? 'selected' : ''}}" data-index="{{index}}" bindtap="kind">{{item}}</button></view><view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{searched}}" class="small">共 {{total}} 项结果</view><view wx:for="{{items}}" wx:key="id" class="list-row" bindtap="open" data-index="{{index}}"><text class="badge">{{item.label}}</text><view class="file-title">{{item.title}}</view><text class="record-text">{{item.snippet}}</text></view>
+  <view wx:if="{{!items.length &amp;&amp; !busy &amp;&amp; !error}}" class="empty"><text class="empty-title">{{searched ? '没有匹配内容。' : '记得一点线索就够了。'}}</text>{{searched ? '试试更短的词语，或切换对象类型。' : '输入关键词，找回它所在的文件和原文。'}}</view>
+  <view wx:if="{{total &gt; 30}}" class="buttons"><button bindtap="previous" disabled="{{busy || !offset}}">上一页</button><button bindtap="next" disabled="{{busy || offset + 30 &gt;= total}}">下一页</button></view>
+</view>
