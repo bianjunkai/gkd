@@ -97,7 +97,7 @@ Several documents describe the same system at different points in time, so **sta
 4. If a **frozen decision** in `产品需求文档.md` section 15 changed, update that row and note the change — do not leave the PRD contradicting the code.
 5. Keep `开发计划.md` section 0 status and verification numbers current.
 
-Known historical drift to avoid repeating: schema version 2 made body `gtd:task:*` blocks authoritative while PRD decision **D-03** still says Front Matter `tasks` is authoritative; and section 0 verification counts lagged the real suite by dozens of tests. Verify counts by running the suite, not by copying an older number.
+Known historical drift, already corrected on 2026-09-10 but worth not repeating: schema version 2 made body `gtd:task:*` blocks authoritative while PRD decision **D-03** still said Front Matter `tasks` was authoritative, and section 0 verification counts lagged the real suite by dozens of tests; both were then synced with the code. Verify counts by running the suite, not by copying an older number.
 
 ## Architecture & Data Handling
 
