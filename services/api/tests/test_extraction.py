@@ -172,6 +172,20 @@ def test_permanent_provider_errors_are_not_automatically_retried(external, monke
     assert "provider internals" not in failed.value.message
 
 
+@pytest.mark.parametrize("provider_code,expected", [(401, "AI_AUTH_FAILED"), (1001, "AI_AUTH_FAILED"), (1113, "AI_REQUEST_REJECTED")])
+def test_error_envelopes_with_http_200_are_classified_without_a_repair_call(external, monkeypatch, provider_code, expected):
+    calls = fake_http(monkeypatch, [httpx.Response(200, json={
+        "success": False, "code": provider_code, "msg": "令牌已过期或验证不正确"})])
+    with pytest.raises(AppError) as failed:
+        extract(external)
+    assert failed.value.code == expected and not failed.value.retryable and len(calls) == 1
+    assert "令牌" not in failed.value.message
+    with external.db.session() as session:
+        event = session.scalar(select(AuditEvent).where(
+            AuditEvent.workspace_id == external.ws, AuditEvent.action == "ai_call"))
+    assert event.details["status"] == "rejected" and event.details["provider_code"] == provider_code
+
+
 def test_network_failure_retries_three_times_and_keeps_original_capture(external, monkeypatch):
     calls = fake_http(monkeypatch, [httpx.ReadTimeout("simulated timeout") for _ in range(3)])
     capture, queued = queue_analysis(external)

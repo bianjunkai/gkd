@@ -204,6 +204,7 @@ class ExtractionService:
             start = time.monotonic()
             result = None
             outcome = "failed"
+            provider_code = None
             try:
                 response = httpx.post(
                     self.settings.ai_base_url.rstrip("/") + "/responses",
@@ -221,6 +222,13 @@ class ExtractionService:
                 if response.status_code >= 400:
                     raise AppError("AI_REQUEST_REJECTED", "外部 AI 未接受请求，请检查模型与接口配置。", 503)
                 result = response.json()
+                # Zhipu's gateway answers auth and quota failures with HTTP 200 error envelopes.
+                if isinstance(result, dict) and result.get("success") is False:
+                    provider_code = result.get("code")
+                    outcome = "rejected"
+                    if provider_code in {401, 1001}:
+                        raise AppError("AI_AUTH_FAILED", "外部 AI 凭据或权限无效，请检查服务端配置。", 503)
+                    raise AppError("AI_REQUEST_REJECTED", "外部 AI 未接受请求，请检查模型与接口配置。", 503)
                 if not isinstance(result, dict) or not isinstance(result.get("output"), list):
                     raise ValueError("Invalid response envelope")
                 if result.get("status") not in {None, "completed"}:
@@ -242,8 +250,11 @@ class ExtractionService:
             finally:
                 with self.db.session() as session:
                     event = session.get(AuditEvent, event_id)
-                    event.details = {**event.details, "duration_ms": round((time.monotonic() - start) * 1000),
-                                     "status": outcome, "usage": response_usage(result)}
+                    details = {**event.details, "duration_ms": round((time.monotonic() - start) * 1000),
+                               "status": outcome, "usage": response_usage(result)}
+                    if provider_code is not None:
+                        details["provider_code"] = provider_code
+                    event.details = details
         raise AssertionError("Unreachable")
 
     @staticmethod

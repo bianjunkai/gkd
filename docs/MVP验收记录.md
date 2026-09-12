@@ -151,3 +151,21 @@ Windows、Node 24.13.1、Python 3.14.3、SQLite、本机 Chrome。使用仓库�
 | 共享客户端 Vitest | `npm.cmd test`（单跑复核） | 38 项通过 |
 
 与 `开发计划.md` 第 0 节及本文 2026-09-10 节记录的 122/35/38 完全一致，无滞后。小程序仍未在官方开发工具或真机验收、无真实 AI 供应商调用，状态不变。首次远程推送目标 `git@github.com:bianjunkai/gkd.git`（此前该仓库从未配置过远程），推送内容即当前 main 的两个既有提交加本次文档提交。
+
+## 2026-09-12 接入智谱 GLM 的适配器准备
+
+目标供应商确定为智谱 GLM。查核确认智谱官方已支持 OpenAI Responses 协议，端点 `https://open.bigmodel.cn/api/v1`（面向 GLM Coding Plan），现有适配器协议不变。用无凭据请求实测该网关：`POST /api/v1/responses` 返回 **HTTP 200 + `{"success":false,"code":1001}`**，携带无效密钥返回 HTTP 200 + `code:401`；对照 `paas/v4/chat/completions` 则按惯例返回 HTTP 401。即智谱网关的部分错误不通过 HTTP 状态码表达，原适配器会把这类信封误判为"输出格式无效"，触发一次无谓修正请求并多计当日额度。
+
+处理：`ExtractionService.extract` 在解析信封前先识别 `success:false`——`code` 为 401/1001 抛 `AI_AUTH_FAILED`，其余抛 `AI_REQUEST_REJECTED`，均不进入格式修正重试；供应商错误码记入 `ai_call` 审计事件的 `provider_code` 字段，不向页面透出供应商原始文案。每日额度对这些失败的计次与既有"网络失败和格式修正也计次"规则一致，未改动。
+
+验证（同日，全部使用隔离临时数据，无真实密钥参与）：
+
+| 检查 | 命令 | 本次结果 |
+| --- | --- | --- |
+| 适配器专项 | `pytest services/api/tests/test_extraction.py`（venv 解释器） | 18 项通过（新增 3 项信封分类用例：401→AUTH、1001→AUTH、1113→REJECTED，均无第二次请求，审计含 `provider_code`） |
+| 后端全量 | `pytest services/api/tests`（venv 解释器） | 125 项通过 |
+| 全量回归 | `npm.cmd run verify` | 退出码 0，类型、Vitest 38 项、构建、后端、端到端 35 项 0 失败 |
+
+文档同步：README「配置与隐私」补充 GLM 端点与配置说明；[实现决策](实现决策.md) 第 3 节记录信封行为与适配取舍；`开发计划.md` 第 0 节后端计数更新为 125。
+
+仍未验证：真实 API 密钥的首次真实调用（工作包 2 保持未完成）、`text.format` 严格 JSON Schema 在智谱 Responses 端点的实际支持、Coding Plan 密钥对 `/api/v1` 的模型权限、供应商留存政策。这些必须在拿到密钥后按 README 的隐私说明逐项确认。

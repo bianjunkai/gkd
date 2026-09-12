@@ -85,6 +85,7 @@ npm.cmd run build --workspace @gkd/miniprogram
 默认无需 `.env`。需要配置时参考 `.env.example` 创建；已有配置不要整体覆盖。密钥、真实原文、数据盘和备份均不得提交。
 
 - `AI_PROVIDER=local`：规则解析不访问模型。外部适配器需 `AI_PROVIDER=responses`、HTTPS `AI_BASE_URL`、`AI_MODEL`、`AI_API_KEY`，并由应用用户阅读说明后开启。
+- 外部适配器使用 OpenAI Responses 协议（`{AI_BASE_URL}/responses`）。智谱 GLM 已官方支持该协议：`AI_BASE_URL=https://open.bigmodel.cn/api/v1`，`AI_MODEL` 填账号可用模型（如 `glm-5.3`），密钥来自智谱开放平台控制台。该端点面向 GLM Coding Plan 套餐，普通按量密钥是否可用需自行确认。供应商返回 HTTP 200 错误信封（`success:false`）时适配器会归为凭据或请求配置错误，不进入格式修正重试。截至 2026-09-12 仍未用真实密钥验证，`text.format` 严格 JSON Schema 在该端点的实际支持情况待首次真实调用确认。
 - 外部请求只包含本条原文、参照时间、时区和明确选中的任务组标题/标签。模型或地址变化后需重新授权；供应商的留存政策仍需核实。关闭开关只能阻止后续请求。
 - 每日额度按外部请求次数计算；网络失败和格式修正也计次，不等同于人民币预算。没有验证真实供应商调用或模型准确率。
 - 本机草稿按账号隔离，但以明文保存在浏览器/小程序存储中，退出后仍为该账号保留。共用设备请谨慎使用并管理本地存储。
